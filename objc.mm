@@ -29,8 +29,14 @@ static Napi::Value MessWithWindow(const Napi::CallbackInfo& info) {
 
 
   printf("raw pointer %p\n", window);
-  NSLog(@"as a window: %@", window);
+  NSLog(@"as objc: %@", window);
   NSLog(@"hierarchy : %@", [window _subtreeDescription]);
+
+  NSLog(@"BG colour %@", window.backgroundColor); // nil on 6
+  NSLog(@"clear colour %@", [NSColor clearColor]);
+  //NSLog(@"wantsLayer %i", window.wantsLayer);
+  //window.backgroundColor = [NSColor blueColor]; // works!
+  // window.backgroundColor = [NSColor clearColor];
 
   return info.Env().Undefined();
 }
@@ -41,4 +47,3 @@ static Napi::Object Init(Napi::Env env, Napi::Object exports) {
 }
 
 NODE_API_MODULE(NODE_GYP_MODULE_NAME, Init)
-//NODE_API_MODULE(objc, Init)
