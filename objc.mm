@@ -28,7 +28,8 @@ static Napi::Value MessWithWindow(const Napi::CallbackInfo& info) {
   window = *reinterpret_cast<NSWindow**>(bytes.Data());
 
 
-  printf("GOT IT %p\n", window);
+  printf("raw pointer %p\n", window);
+  NSLog(@"as a window: %@", window);
 
   return info.Env().Undefined();
 }
