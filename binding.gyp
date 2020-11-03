@@ -1,7 +1,7 @@
 {
   "targets": [
     {
-      "target_name": "objc",
+      "target_name": "windowMesser",
       "cflags!": [ "-fno-exceptions" ],
       "cflags_cc!": [ "-fno-exceptions" ],
       "sources": [ "objc.mm" ],

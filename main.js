@@ -1,6 +1,8 @@
 // Modules to control application life and create native browser window
 const {app, BrowserWindow} = require('electron')
 const path = require('path')
+const binding = require('bindings')('windowMesser');
+
 
 function createWindow () {
   // Create the browser window.
@@ -37,6 +39,7 @@ function createWindow () {
 
   const nativeWin = mainWindow.getNativeWindowHandle();
   console.log('nativeWin: ', nativeWin);
+  binding.MessWithWindow(nativeWin);
 
   // Open the DevTools.
   // mainWindow.webContents.openDevTools()
