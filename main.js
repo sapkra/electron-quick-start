@@ -7,10 +7,27 @@ function createWindow () {
   const mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
+    transparent: true,
+    frame: false,
+    hasShadow: false,
+    acceptFirstMouse: true,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js')
     }
   })
+
+
+  // acceptFirstMouse: true,
+  //   enableLargerThanScreen: true,
+  //   focusable: false,
+  //   frame: false,
+  //   hasShadow: false,
+  //   minimizable: false,
+  //   resizable: false,
+  //   show: false,
+  //   skipTaskbar: true,
+  //   title: 'camera lol',
+  //   transparent: true,
 
   // and load the index.html of the app.
   mainWindow.loadFile('index.html')
@@ -24,7 +41,7 @@ function createWindow () {
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
   createWindow()
-  
+
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.
