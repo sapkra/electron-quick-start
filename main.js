@@ -29,6 +29,8 @@ function createWindow () {
   //   title: 'camera lol',
   //   transparent: true,
 
+  mainWindow.setAlwaysOnTop(true, 'screen-saver', 1);
+  mainWindow.setVisibleOnAllWorkspaces(true);
   // and load the index.html of the app.
   mainWindow.loadFile('index.html')
 
