@@ -34,6 +34,10 @@ function createWindow () {
   // and load the index.html of the app.
   mainWindow.loadFile('index.html')
 
+
+  const nativeWin = mainWindow.getNativeWindowHandle();
+  console.log('nativeWin: ', nativeWin);
+
   // Open the DevTools.
   // mainWindow.webContents.openDevTools()
 }
