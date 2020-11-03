@@ -30,6 +30,7 @@ static Napi::Value MessWithWindow(const Napi::CallbackInfo& info) {
 
   printf("raw pointer %p\n", window);
   NSLog(@"as a window: %@", window);
+  NSLog(@"hierarchy : %@", [window _subtreeDescription]);
 
   return info.Env().Undefined();
 }
