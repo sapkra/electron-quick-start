@@ -7,33 +7,28 @@ const binding = require('bindings')('windowMesser');
 function createWindow () {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 800,
-    height: 600,
-    transparent: true,
+    x: 100,
+    y: 100,
+    width: 2000,
+    height: 2000,
+    acceptFirstMouse: true,
+    enableLargerThanScreen: true,
+    focusable: false,
     frame: false,
     hasShadow: false,
-    acceptFirstMouse: true,
+    minimizable: false,
+    resizable: false,
+    show: false,
+    skipTaskbar: true,
+    title: 'camera',
+    transparent: true,
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js')
-    }
+      nodeIntegration: true,
+    },
   })
 
-
-  // acceptFirstMouse: true,
-  //   enableLargerThanScreen: true,
-  //   focusable: false,
-  //   frame: false,
-  //   hasShadow: false,
-  //   minimizable: false,
-  //   resizable: false,
-  //   show: false,
-  //   skipTaskbar: true,
-  //   title: 'camera lol',
-  //   transparent: true,
-
-  mainWindow.setAlwaysOnTop(true, 'screen-saver', 1);
-  mainWindow.setVisibleOnAllWorkspaces(true);
-  // and load the index.html of the app.
+  // mainWindow.setIgnoreMouseEvents(true);
+  mainWindow.setAlwaysOnTop(true, 'pop-up-menu', 1);
   mainWindow.loadFile('index.html')
 
 
@@ -41,15 +36,26 @@ function createWindow () {
   console.log('nativeWin: ', nativeWin);
   binding.MessWithWindow(nativeWin);
 
+  mainWindow.once('ready-to-show', () => {
+  binding.MessWithWindow(nativeWin);
+    if (mainWindow) {
+      mainWindow.showInactive();
+  binding.MessWithWindow(nativeWin);
+    }
+  });
+
   // Open the DevTools.
   // mainWindow.webContents.openDevTools()
 }
+
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
   createWindow()
+
+  // app.dock.hide();
 
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the
@@ -64,6 +70,3 @@ app.whenReady().then(() => {
 app.on('window-all-closed', function () {
   if (process.platform !== 'darwin') app.quit()
 })
-
-// In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and require them here.
