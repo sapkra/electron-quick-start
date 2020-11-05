@@ -19,6 +19,6 @@
   "devDependencies": {
     "bindings": "~1.2.1",
     "node-addon-api": "^3.0.0",
-    "electron": "6.1.12"
+    "electron": "^8.0.0"
   }
 }

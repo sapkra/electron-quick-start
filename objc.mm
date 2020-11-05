@@ -19,7 +19,7 @@ static void (*oldSetIgnoresMouseEvents)(id, SEL, BOOL);
 // has been called, you can never return to the initial state, so we turn calls to 
 // setIgnoreMouseEvents into a no-op using a monkey patch.
 static void setIgnoresMouseEvents(id self, SEL _cmd, BOOL ignores) {
-  NSLog(@"setIgnoresMouseEvents: %@ to %i", self, ignores);
+  NSLog(@"setIgnoresMouseEvents: %@ - %@ to %i", self, NSStringFromRect([self frame]), ignores);
 
   // TODO: don't call on all windows.
   if (0) oldSetIgnoresMouseEvents(self, _cmd, ignores);
