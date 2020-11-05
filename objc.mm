@@ -3,8 +3,44 @@
 #include <string.h>
 #import <AppKit/AppKit.h>
 
+#include <objc/runtime.h>
+#include <objc/message.h>
+
+// simple shim to conditionally disable setIgnoresMouseEvents so that it doesn't
+// destroy our transparent window click-thru-ability (CV-401)
+static void (*oldSetIgnoresMouseEvents)(id, SEL, BOOL);
+
+// See the comment on this answer that says NSWindow.ignoresMouseEvents has THREE states
+//   https://stackoverflow.com/a/29451199/22147
+//    1. ignoresMouseEvents on transparent areas (the initial state)
+//    2. ignores all events (YES)
+//    3. does not ignore any events (NO)
+// The first state is what we want for the camera bubble, and once setIgnoresMouseEvents
+// has been called, you can never return to the initial state, so we turn calls to 
+// setIgnoreMouseEvents into a no-op using a monkey patch.
+static void setIgnoresMouseEvents(id self, SEL _cmd, BOOL ignores) {
+  NSLog(@"setIgnoresMouseEvents: %@ to %i", self, ignores);
+
+  // TODO: don't call on all windows.
+  if (0) oldSetIgnoresMouseEvents(self, _cmd, ignores);
+}
+
+// as an addon, this is called at require('bindings')('yourAddOn') time
+// this is early enough in test app.
+// which means this could equally be called by Init() without constructor magic
+__attribute__((constructor))
+static void swizzle() {
+  fprintf(stderr, "Swizzling NSWindow\n");
+    id cls = objc_getClass("NSWindow");
+    oldSetIgnoresMouseEvents = (void(*)(id,SEL,BOOL))method_setImplementation(class_getInstanceMethod(cls, @selector(setIgnoresMouseEvents:)), (IMP)setIgnoresMouseEvents);
+    if (!oldSetIgnoresMouseEvents) fprintf(stderr, "[!] WARNING: NSButtonCell swizzle failed\n");
+}
+
 static Napi::Value MessWithWindow(const Napi::CallbackInfo& info) {
+
   Napi::Env env = info.Env();
+NSLog(@"GOT CALLED BYE");
+return env.Undefined();
 
   if (info.Length() != 1) {
     Napi::Error::New(env, "Wrong number of arguments. Expected: (viewHandle)")
@@ -50,7 +86,12 @@ if (1) {
   NSWindow *win = view.window;
 NSLog(@"window = %@", win);
 NSLog(@"window bg colour = %@", win.backgroundColor);
-NSLog(@"window style mask= %i, want %i", win.styleMask, NSBorderlessWindowMask);
+NSLog(@"window style mask= %lu, want %lu", win.styleMask, NSBorderlessWindowMask);
+NSLog(@"opaque: %i", win.opaque);
+win.ignoresMouseEvents = YES;
+NSLog(@"ignoresMouseEvents: %i", win.ignoresMouseEvents);
+NSLog(@"canBecomeKeyWindow: %i", win.canBecomeKeyWindow);
+
 //  win.backgroundColor = [NSColor clearColor];
 //NSLog(@"window2 = %@", view.superview.window);
 

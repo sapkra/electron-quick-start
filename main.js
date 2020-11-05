@@ -3,8 +3,9 @@ const {app, BrowserWindow} = require('electron')
 const path = require('path')
 const binding = require('bindings')('windowMesser');
 
-
 function createWindow () {
+  console.log('createWindow');
+
   // Create the browser window.
   const mainWindow = new BrowserWindow({
     x: 100,
@@ -34,13 +35,14 @@ function createWindow () {
 
   const nativeWin = mainWindow.getNativeWindowHandle();
   console.log('nativeWin: ', nativeWin);
-  binding.MessWithWindow(nativeWin);
+  //binding.MessWithWindow(nativeWin);
 
   mainWindow.once('ready-to-show', () => {
-  binding.MessWithWindow(nativeWin);
+  //binding.MessWithWindow(nativeWin);
     if (mainWindow) {
       mainWindow.showInactive();
-  binding.MessWithWindow(nativeWin);
+//setTimeout(, 3000);
+  //binding.MessWithWindow(nativeWin);
     }
   });
 
