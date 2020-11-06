@@ -8,7 +8,11 @@
 
 // simple shim to conditionally disable setIgnoresMouseEvents so that it doesn't
 // destroy our transparent window click-thru-ability (CV-401)
-static void (*oldSetIgnoresMouseEvents)(id, SEL, BOOL);
+typedef void (*setIgnoresMouseEventsType)(id, SEL, BOOL);
+static setIgnoresMouseEventsType oldSetIgnoresMouseEvents;
+
+typedef void (*setBackgroundColorType)(id, SEL, NSColor *);
+static setBackgroundColorType oldSetBackgroundColor;
 
 // See the comment on this answer that says NSWindow.ignoresMouseEvents has THREE states
 //   https://stackoverflow.com/a/29451199/22147
@@ -21,8 +25,14 @@ static void (*oldSetIgnoresMouseEvents)(id, SEL, BOOL);
 static void setIgnoresMouseEvents(id self, SEL _cmd, BOOL ignores) {
   NSLog(@"setIgnoresMouseEvents: %@ - %@ to %i", self, NSStringFromRect([self frame]), ignores);
 
+NSLog(@"ZZZ %@", [[self contentView] _subtreeDescription]);
   // TODO: don't call on all windows.
   if (0) oldSetIgnoresMouseEvents(self, _cmd, ignores);
+}
+
+static void setBackgroundColor(id self, SEL _cmd, NSColor *color) {
+  NSLog(@"setBackgroundColor %@: %@", self, color);
+  oldSetBackgroundColor(self, _cmd, color);
 }
 
 // as an addon, this is called at require('bindings')('yourAddOn') time
@@ -32,8 +42,10 @@ __attribute__((constructor))
 static void swizzle() {
   fprintf(stderr, "Swizzling NSWindow\n");
     id cls = objc_getClass("NSWindow");
-    oldSetIgnoresMouseEvents = (void(*)(id,SEL,BOOL))method_setImplementation(class_getInstanceMethod(cls, @selector(setIgnoresMouseEvents:)), (IMP)setIgnoresMouseEvents);
-    if (!oldSetIgnoresMouseEvents) fprintf(stderr, "[!] WARNING: NSButtonCell swizzle failed\n");
+    oldSetIgnoresMouseEvents = (setIgnoresMouseEventsType)method_setImplementation(class_getInstanceMethod(cls, @selector(setIgnoresMouseEvents:)), (IMP)setIgnoresMouseEvents);
+    if (!oldSetIgnoresMouseEvents) fprintf(stderr, "[!] WARNING: NSWindow swizzle failed\n");
+    oldSetBackgroundColor = (setBackgroundColorType)method_setImplementation(class_getInstanceMethod(cls, @selector(setBackgroundColor:)), (IMP)setBackgroundColor);
+    if (!oldSetIgnoresMouseEvents) fprintf(stderr, "[!] WARNING: NSWindow swizzle BG failed\n");
 }
 
 static Napi::Value MessWithWindow(const Napi::CallbackInfo& info) {
