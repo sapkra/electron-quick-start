@@ -26,13 +26,21 @@
         height: 100px;
         background-color: red;
         color: red;
+        overflow: hidden;
+      }
+
+      #cam {
+        height: 100%;
       }
     </style>
     <title>Hello World!</title>
   </head>
   <body>
     <div id="container">
-      <div id="blocky"></div>
+      <div id="blocky">
+        <video id="cam"></video>
+      </div>
+
     </div>
 
     <!-- You can also require other files to run in this process -->
@@ -79,6 +87,22 @@
           document.onmousemove = null;
         }
       }
+    </script>
+    <script>
+      var constraints = { audio: false, video: { width: 1280, height: 720 } };
+
+      navigator.mediaDevices
+        .getUserMedia(constraints)
+        .then(function (mediaStream) {
+          var video = document.getElementById('cam');
+          video.srcObject = mediaStream;
+          video.onloadedmetadata = function (e) {
+            video.play();
+          };
+        })
+        .catch(function (err) {
+          console.log(err.name + ': ' + err.message);
+        });
     </script>
   </body>
 </html>
