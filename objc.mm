@@ -8,11 +8,14 @@
 
 // simple shim to conditionally disable setIgnoresMouseEvents so that it doesn't
 // destroy our transparent window click-thru-ability (CV-401)
-typedef void (*setIgnoresMouseEventsType)(id, SEL, BOOL);
+typedef void (*setIgnoresMouseEventsType)(NSWindow *, SEL, BOOL);
 static setIgnoresMouseEventsType oldSetIgnoresMouseEvents;
 
-typedef void (*setBackgroundColorType)(id, SEL, NSColor *);
+typedef void (*setBackgroundColorType)(NSWindow *, SEL, NSColor *);
 static setBackgroundColorType oldSetBackgroundColor;
+
+typedef void (*setWantsLayerType)(NSView *, SEL, BOOL);
+static setWantsLayerType oldSetWantsLayer;
 
 // See the comment on this answer that says NSWindow.ignoresMouseEvents has THREE states
 //   https://stackoverflow.com/a/29451199/22147
@@ -22,17 +25,24 @@ static setBackgroundColorType oldSetBackgroundColor;
 // The first state is what we want for the camera bubble, and once setIgnoresMouseEvents
 // has been called, you can never return to the initial state, so we turn calls to 
 // setIgnoreMouseEvents into a no-op using a monkey patch.
-static void setIgnoresMouseEvents(id self, SEL _cmd, BOOL ignores) {
+static void setIgnoresMouseEvents(NSWindow* self, SEL _cmd, BOOL ignores) {
   NSLog(@"setIgnoresMouseEvents: %@ - %@ to %i", self, NSStringFromRect([self frame]), ignores);
-
+NSView *view = [self contentView];
+//view.wantsLayer = YES;
 NSLog(@"ZZZ %@", [[self contentView] _subtreeDescription]);
   // TODO: don't call on all windows.
   if (0) oldSetIgnoresMouseEvents(self, _cmd, ignores);
 }
 
-static void setBackgroundColor(id self, SEL _cmd, NSColor *color) {
+static void setBackgroundColor(NSWindow* self, SEL _cmd, NSColor *color) {
   NSLog(@"setBackgroundColor %@: %@", self, color);
   oldSetBackgroundColor(self, _cmd, color);
+}
+
+static void setWantsLayer(NSView *self, SEL _cmd, BOOL wants) {
+  NSLog(@"SET WANT LAYER: %@: %i", self, wants);
+
+  oldSetWantsLayer(self, _cmd, wants);
 }
 
 // as an addon, this is called at require('bindings')('yourAddOn') time
@@ -46,6 +56,10 @@ static void swizzle() {
     if (!oldSetIgnoresMouseEvents) fprintf(stderr, "[!] WARNING: NSWindow swizzle failed\n");
     oldSetBackgroundColor = (setBackgroundColorType)method_setImplementation(class_getInstanceMethod(cls, @selector(setBackgroundColor:)), (IMP)setBackgroundColor);
     if (!oldSetIgnoresMouseEvents) fprintf(stderr, "[!] WARNING: NSWindow swizzle BG failed\n");
+
+    id nsViewCls = objc_getClass("NSView");
+    oldSetWantsLayer = (setWantsLayerType)method_setImplementation(class_getInstanceMethod(nsViewCls, @selector(setWantsLayer:)), (IMP)setWantsLayer);
+    if (!oldSetWantsLayer) fprintf(stderr, "[!] WARNING: NSView swizzle failed\n");
 }
 
 static Napi::Value MessWithWindow(const Napi::CallbackInfo& info) {
@@ -112,6 +126,7 @@ NSLog(@"canBecomeKeyWindow: %i", win.canBecomeKeyWindow);
 
 static Napi::Object Init(Napi::Env env, Napi::Object exports) {
   exports["MessWithWindow"] = Napi::Function::New(env, MessWithWindow);
+NSLog(@"CLEAR COLOR %@", [NSColor clearColor]);
   return exports;
 }
 
