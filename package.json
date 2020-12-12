@@ -16,7 +16,10 @@
   ],
   "author": "GitHub",
   "license": "CC0-1.0",
+  "dependencies": {
+    "@loomhq/electron-click-through-workaround": "^0.0.1"
+  },
   "devDependencies": {
-    "electron": "6.1.12"
+    "electron": "11.1.0"
   }
 }
